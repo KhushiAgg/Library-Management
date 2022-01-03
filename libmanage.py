@@ -6,6 +6,15 @@ import mysql.connector
 # admin's password
 password = '00000'
 
+#connect to database
+con = mysql.connector.connect(
+    user = 'root',
+    passwd='',
+    host='localhost',
+    database='library')
+if con.is_connected:
+    cursor = con.cursor()
+
 # defining functions
 def insert_book():
     global cursor
@@ -13,10 +22,10 @@ def insert_book():
     author = input("Enter Book's Author: ")
     genre = input("Enter Genre: ")
     quantity = int(input("Enter quantity: "))
-    query = "INSERT into books(bookname,author,genre,quantity)" \
+    query = "INSERT into books(bookname,genre,quantity,author)" \
         "VALUES(%s,%s,%s,%s)"
         
-    val = (bookname,author,genre,quantity)
+    val = (bookname,genre,quantity,author)
     try:
         cursor.execute(query,val)
         con.commit()
@@ -29,7 +38,7 @@ def delete_book():
     global cursor
     bookname = input("Enter bookname to Delete book: ")
     query = "DELETE FROM books WHERE bookname=%s"
-    val = (bookname)
+    val = (bookname,)
     try:
         cursor.execute(query,val)
         con.commit()
@@ -78,7 +87,7 @@ def search_book():
     try:
         cursor.execute(query,val)
         books_record = cursor.fetchone()
-        print("BOOKNAME | AUTHOR | GENRE | QUANTITY")  
+        print("BOOKNAME | GENRE | QUANTITY | AUTHOR")  
         for book_details in books_record:
             print(" |", book_details, end = "")
     except:
@@ -88,11 +97,29 @@ def search_book():
 def available_book():
     global cursor
     print("ALL AVAILABLE BOOKS")
-    print("BOOKNAME | AUTHOR | GENRE  | QUANTITY ")
+    print("BOOKNAME | GENRE  | QUANTITY | AUTHOR")
     cursor.execute("Select * from books;")
     books_record = cursor.fetchall()
     for book_details in books_record:
         print(book_details)
+
+def issue_table():
+    print("Records of Students who Issued Books")
+    print("REGISTRATION No. | STUDENT NAME | BOOK NAME | ISSUE DATE")
+    cursor.execute("Select * from issue;")
+    stu_record = cursor.fetchall()
+    for stu_details in stu_record:
+        print(stu_details)
+# SELECT * FROM `issue`
+
+def returned_table():
+    print("Records of Students who Returned Books")
+    print("REGISTRATION No. | STUDENT NAME | BOOK NAME | RETURN DATE")
+    cursor.execute("Select * from returned;")
+    stu_record = cursor.fetchall()
+    for stu_details in stu_record:
+        print(stu_details)
+# SELECT * FROM `issue`
 
 def issue_book():
     global cursor
@@ -118,7 +145,7 @@ def return_book():
     name = input("Enter your Name: ")
     bookname = input("Enter bookname to return: ")
     returndate = input("Enter return date: ")
-    query = "INSERT into return(`Registration No.`, `Student Name`, `Book Name`, `Return Date`)" \
+    query = "INSERT into returned(`Registration No.`, `Student Name`, `Book Name`, `Return Date`)" \
         "VALUES(%s,%s,%s,%s)"
     val = (reg_no, name, bookname, returndate)
     try:
@@ -146,14 +173,7 @@ def book_up(bookname, upquantity):
         con.rollback()
         print("Something went Wrong please try again later...")
 
-#connect to database
-con = mysql.connector.connect(
-    user = 'root',
-    passwd='',
-    host='localhost',
-    database='library')
-if con.is_connected:
-    cursor = con.cursor()
+
 
 #Menu 
 print('*****Welcome to Library Management system*****')
@@ -178,7 +198,7 @@ if user == '1':
 if user == '2':
     pass_check = input("Enter Admin Password To Procced: ")
     if pass_check == password:
-        print('Enter your choice to perform Admin operation \n 1.Add New Book\n 2.Delete book\n 3.Update quantity\n 4.Change Genre\n 5.Search Book ')
+        print('Enter your choice to perform Admin operation \n 1.Add New Book\n 2.Delete book\n 3.Update quantity\n 4.Change Genre\n 5.Search Book\n 6.Display All Books\n 7.Display Issue Table\n 8.Display Return Table')
         options = 'Y'
         while options == 'Y':
             option = input("Enter Option: ")
@@ -192,6 +212,12 @@ if user == '2':
                 change_genre()
             elif option == '5':
                 search_book()
+            elif option == '6':
+                available_book()
+            elif option == '7':
+                issue_table()
+            elif option == '8':
+                returned_table()
             else:
                 print("Wrong input!!")
             options = input("\nDo you wish to continue? (Y/N)").upper()
